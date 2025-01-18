@@ -29,7 +29,7 @@ export class Post {
   @Column({ type: 'varchar', length: 255 })
   title: string;
 
-  @Column({ type: 'text', length: 16777215 })
+  @Column({ type: 'text' })
   content: string;
 
   @Column({ default: '' })

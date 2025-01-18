@@ -1,0 +1,48 @@
+@baseUrl = http://localhost:3000
+
+# USER
+
+### Cria um usuario
+POST {{baseUrl}}/users/register
+Content-Type: application/json
+
+{
+  "name": "rukia",
+  "email": "rukia@gmail.com",
+  "profilePicture": "fakefot.com",
+  "password": "Ab?123456"
+}
+
+### Pega todos os usuarios
+
+GET {{baseUrl}}/users
+
+### Pega o usuario pelo id
+GET {{baseUrl}}/users/1
+
+
+# POST
+
+### Cria um post
+POST {{baseUrl}}/posts/create/1
+Content-Type: application/json
+
+{
+      "title": "The Rise of Decentralized Finance",
+      "content": "Decentralized Finance (DeFi) is reshaping the traditional financial landscape. This analysis explores the fundamental concepts of DeFi, its current applications, and its potential to democratize access to financial services across the globe...",
+      "coverImage": "https://example.com/images/defi-rise.jpg",
+      "category": "technology"
+}
+
+
+### Pega um post por id
+GET {{baseUrl}}/posts/1
+
+### Pega todos os post de um usuario
+GET {{baseUrl}}/posts/user/1
+
+### Pega post com uma paginação basica
+GET {{baseUrl}}/posts?page=1&limit=2
+
+### Pega os post com uma paginação avançada
+GET {{baseUrl}}/posts?page=1&limit=10&category=technology&search=nestjs
