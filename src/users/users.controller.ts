@@ -6,10 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PaginationQueryDto } from 'src/posts/pagination/dto/pagination.dto';
 
 @Controller('users')
 export class UsersController {
@@ -28,6 +31,30 @@ export class UsersController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
+  }
+
+  @Post(':userId/saved-posts/:postId')
+  savePost(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('postId', ParseIntPipe) postId: number,
+  ) {
+    return this.usersService.savePost(userId, postId);
+  }
+
+  @Delete(':userId/saved-posts/:postId')
+  unsavePost(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('postId', ParseIntPipe) postId: number,
+  ) {
+    return this.usersService.unsavePost(userId, postId);
+  }
+
+  @Get(':userId/saved-posts')
+  getSavedPosts(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Query() query: PaginationQueryDto,
+  ) {
+    return this.usersService.getSavedPosts(userId, query);
   }
 
   @Patch(':id')

@@ -7,13 +7,18 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
+import { Post } from 'src/posts/entities/post.entity';
+import { PaginationQueryDto } from 'src/posts/pagination/dto/pagination.dto';
+import { PaginatedResult } from 'src/posts/pagination/pagination.interface';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Post)
+    private readonly postRepository: Repository<Post>,
   ) {}
   async create(createUserDto: CreateUserDto) {
     try {
@@ -64,6 +69,132 @@ export class UsersService {
       }
 
       return user;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async savePost(userId: number, postId: number) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+        relations: ['savedPosts'],
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      const post = await this.postRepository.findOne({
+        where: { id: postId },
+      });
+
+      if (!post) {
+        throw new NotFoundException('Post not found');
+      }
+
+      const isPostSaved = user.savedPosts.some(
+        (savedPost) => savedPost.id === postId,
+      );
+      if (isPostSaved) {
+        throw new ConflictException('Post is already saved');
+      }
+
+      user.savedPosts.push(post);
+      await this.userRepository.save(user);
+
+      return { message: 'Post saved successfully' };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async unsavePost(userId: number, postId: number) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+        relations: ['savedPosts'],
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      const savedPostIndex = user.savedPosts.findIndex(
+        (post) => post.id === postId,
+      );
+      if (savedPostIndex === -1) {
+        throw new NotFoundException('Post is not in saved posts');
+      }
+
+      user.savedPosts.splice(savedPostIndex, 1);
+      await this.userRepository.save(user);
+
+      return { message: 'Post removed from saved posts' };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getSavedPosts(
+    userId: number,
+    query: PaginationQueryDto,
+  ): Promise<PaginatedResult<Post>> {
+    const { page = 1, limit = 10, category, search } = query;
+    const skip = (page - 1) * limit;
+
+    try {
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      const whereClause: any = {
+        savedByUsers: { id: userId },
+      };
+
+      if (category) {
+        whereClause.category = category;
+      }
+      if (search) {
+        whereClause.title = Like(`%${search}%`);
+      }
+
+      const [posts, total] = await this.postRepository.findAndCount({
+        where: whereClause,
+        relations: ['author'],
+        select: {
+          author: {
+            id: true,
+            name: true,
+            profilePicture: true,
+          },
+        },
+        order: {
+          createdAt: 'DESC',
+        },
+        skip,
+        take: limit,
+      });
+
+      if (!posts.length) {
+        throw new NotFoundException('No saved posts found');
+      }
+
+      const lastPage = Math.ceil(total / limit);
+
+      return {
+        data: posts,
+        meta: {
+          total,
+          page,
+          lastPage,
+          limit,
+        },
+      };
     } catch (error) {
       throw error;
     }

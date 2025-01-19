@@ -7,8 +7,8 @@ POST {{baseUrl}}/users/register
 Content-Type: application/json
 
 {
-  "name": "rukia",
-  "email": "rukia@gmail.com",
+  "name": "ichigo",
+  "email": "ichigo@gmail.com",
   "profilePicture": "fakefot.com",
   "password": "Ab?123456"
 }
@@ -20,6 +20,14 @@ GET {{baseUrl}}/users
 ### Pega o usuario pelo id
 GET {{baseUrl}}/users/1
 
+### Salva Post para o Usuario
+POST {{baseUrl}}/users/4/saved-posts/2
+
+### Remove um Post do salvos do usuario
+DELETE {{baseUrl}}/users/4/saved-posts/2
+
+### Pega todos os posts salvos do usuario
+GET {{baseUrl}}/users/4/saved-posts
 
 # POST
 
