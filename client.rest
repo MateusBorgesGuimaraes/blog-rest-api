@@ -1,4 +1,5 @@
 @baseUrl = http://localhost:3000
+@authToken = {{authenticate.response.body.token}}
 
 # USER
 
@@ -7,8 +8,8 @@ POST {{baseUrl}}/users/register
 Content-Type: application/json
 
 {
-  "name": "ichigo",
-  "email": "ichigo@gmail.com",
+  "name": "rukia",
+  "email": "rukia@gmail.com",
   "profilePicture": "fakefot.com",
   "password": "Ab?123456"
 }
@@ -54,3 +55,14 @@ GET {{baseUrl}}/posts?page=1&limit=2
 
 ### Pega os post com uma paginação avançada
 GET {{baseUrl}}/posts?page=1&limit=10&category=technology&search=nestjs
+
+# AUTH
+### Loga o usuario
+# @name authenticate
+POST  {{baseUrl}}/auth/
+Content-Type: application/json
+
+{
+  "email": "rukia@gmail.com",
+  "password": "Ab?123456"
+}

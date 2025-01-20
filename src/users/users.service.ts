@@ -11,6 +11,7 @@ import { Like, Repository } from 'typeorm';
 import { Post } from 'src/posts/entities/post.entity';
 import { PaginationQueryDto } from 'src/posts/pagination/dto/pagination.dto';
 import { PaginatedResult } from 'src/posts/pagination/pagination.interface';
+import { HashingService } from 'src/auth/hashing/hashing.service';
 
 @Injectable()
 export class UsersService {
@@ -19,14 +20,18 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Post)
     private readonly postRepository: Repository<Post>,
+    private readonly hashingService: HashingService,
   ) {}
   async create(createUserDto: CreateUserDto) {
     try {
+      const passwordHash = await this.hashingService.hash(
+        createUserDto.password,
+      );
       const userData = {
         name: createUserDto.name,
         email: createUserDto.email,
         profilePicture: createUserDto.profilePicture,
-        passwordHash: createUserDto.password,
+        passwordHash,
         role: createUserDto.role,
       };
 
