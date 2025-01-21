@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +11,7 @@ import { Like, Repository } from 'typeorm';
 import { PaginationQueryDto } from './pagination/dto/pagination.dto';
 import { PaginatedResult } from './pagination/pagination.interface';
 import { User } from 'src/users/entities/user.entity';
+import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
 
 @Injectable()
 export class PostsService {
@@ -127,7 +132,6 @@ export class PostsService {
     const { page = 1, limit = 10, category, search } = query;
     const skip = (page - 1) * limit;
 
-    // Build where clause
     const whereClause: any = {
       author: { id: userId },
     };
@@ -140,13 +144,11 @@ export class PostsService {
     }
 
     try {
-      // First verify if user exists
       const userExists = await this.userRepository.findOneBy({ id: userId });
       if (!userExists) {
         throw new NotFoundException('User not found');
       }
 
-      // Get posts with total count
       const [posts, total] = await this.postRepository.findAndCount({
         where: whereClause,
         relations: ['author'],
@@ -168,7 +170,6 @@ export class PostsService {
         throw new NotFoundException('No posts found for this user');
       }
 
-      // Calculate last page
       const lastPage = Math.ceil(total / limit);
 
       return {
@@ -185,11 +186,64 @@ export class PostsService {
     }
   }
 
-  update(id: number, updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
+  async update(
+    id: number,
+    updatePostDto: UpdatePostDto,
+    tokenPayload: TokenPayloadDto,
+  ) {
+    if (tokenPayload.role !== 'blogger') {
+      throw new UnauthorizedException(
+        'You are not allowed to update this post',
+      );
+    }
+
+    try {
+      const post = await this.postRepository.findOneBy({ id });
+
+      if (!post) {
+        throw new NotFoundException('Post not found');
+      }
+
+      if (tokenPayload.sub !== post.author.id) {
+        throw new UnauthorizedException(
+          'You are not allowed to update this post',
+        );
+      }
+
+      const updatedPost = {
+        ...post,
+        ...updatePostDto,
+      };
+
+      return this.postRepository.save(updatedPost);
+    } catch (error) {
+      throw error;
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} post`;
+  async remove(id: number, tokenPayload: TokenPayloadDto) {
+    if (tokenPayload.role !== 'blogger') {
+      throw new UnauthorizedException(
+        'You are not allowed to delete this post',
+      );
+    }
+
+    try {
+      const post = await this.postRepository.findOneBy({ id });
+
+      if (!post) {
+        throw new NotFoundException('Post not found');
+      }
+
+      if (tokenPayload.sub !== post.author.id) {
+        throw new UnauthorizedException(
+          'You are not allowed to delete this post',
+        );
+      }
+
+      return this.postRepository.remove(post);
+    } catch (error) {
+      throw error;
+    }
   }
 }

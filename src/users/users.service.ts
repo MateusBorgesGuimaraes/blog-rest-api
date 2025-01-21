@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -12,6 +13,7 @@ import { Post } from 'src/posts/entities/post.entity';
 import { PaginationQueryDto } from 'src/posts/pagination/dto/pagination.dto';
 import { PaginatedResult } from 'src/posts/pagination/pagination.interface';
 import { HashingService } from 'src/auth/hashing/hashing.service';
+import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
 
 @Injectable()
 export class UsersService {
@@ -46,7 +48,12 @@ export class UsersService {
     }
   }
 
-  async findAll() {
+  async findAll(tokenPayload: TokenPayloadDto) {
+    if (tokenPayload.role !== 'blogger') {
+      throw new UnauthorizedException(
+        'You are not allowed to access this route',
+      );
+    }
     try {
       const users = await this.userRepository.find({
         select: ['id', 'name', 'email', 'profilePicture', 'role'],
@@ -62,7 +69,12 @@ export class UsersService {
     }
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, tokenPayload: TokenPayloadDto) {
+    if (tokenPayload.role !== 'blogger' && tokenPayload.sub !== id) {
+      throw new UnauthorizedException(
+        'You are not allowed to access this route',
+      );
+    }
     try {
       const user = await this.userRepository.findOne({
         where: { id },
@@ -203,13 +215,5 @@ export class UsersService {
     } catch (error) {
       throw error;
     }
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    // probrably not needed
-  }
-
-  remove(id: number) {
-    // probrably not needed
   }
 }

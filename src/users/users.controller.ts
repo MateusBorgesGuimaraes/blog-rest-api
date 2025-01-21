@@ -8,11 +8,15 @@ import {
   Delete,
   ParseIntPipe,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationQueryDto } from 'src/posts/pagination/dto/pagination.dto';
+import { AuthTokenGuard } from 'src/auth/guards/auth-token.guard';
+import { TokenPayloadParam } from 'src/auth/params/token-payload.params';
+import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
 
 @Controller('users')
 export class UsersController {
@@ -23,47 +27,45 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @UseGuards(AuthTokenGuard)
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@TokenPayloadParam() tokenPayload: TokenPayloadDto) {
+    return this.usersService.findAll(tokenPayload);
   }
 
+  @UseGuards(AuthTokenGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  findOne(
+    @Param('id') id: string,
+    @TokenPayloadParam() tokenPayload: TokenPayloadDto,
+  ) {
+    return this.usersService.findOne(+id, tokenPayload);
   }
 
-  @Post(':userId/saved-posts/:postId')
+  @UseGuards(AuthTokenGuard)
+  @Post('/saved-posts/:postId')
   savePost(
-    @Param('userId', ParseIntPipe) userId: number,
     @Param('postId', ParseIntPipe) postId: number,
+    @TokenPayloadParam() tokenPayload: TokenPayloadDto,
   ) {
-    return this.usersService.savePost(userId, postId);
+    return this.usersService.savePost(tokenPayload.sub, postId);
   }
 
-  @Delete(':userId/saved-posts/:postId')
+  @UseGuards(AuthTokenGuard)
+  @Delete('/saved-posts/:postId')
   unsavePost(
-    @Param('userId', ParseIntPipe) userId: number,
     @Param('postId', ParseIntPipe) postId: number,
+    @TokenPayloadParam() tokenPayload: TokenPayloadDto,
   ) {
-    return this.usersService.unsavePost(userId, postId);
+    return this.usersService.unsavePost(tokenPayload.sub, postId);
   }
 
-  @Get(':userId/saved-posts')
+  @UseGuards(AuthTokenGuard)
+  @Get('/saved-posts')
   getSavedPosts(
-    @Param('userId', ParseIntPipe) userId: number,
     @Query() query: PaginationQueryDto,
+    @TokenPayloadParam() tokenPayload: TokenPayloadDto,
   ) {
-    return this.usersService.getSavedPosts(userId, query);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+    return this.usersService.getSavedPosts(tokenPayload.sub, query);
   }
 }

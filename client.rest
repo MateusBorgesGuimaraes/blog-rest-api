@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:3000
-@authToken = {{authenticate.response.body.token}}
+@authToken = {{authenticate.response.body.accessToken}}
 
 # USER
 
@@ -8,8 +8,8 @@ POST {{baseUrl}}/users/register
 Content-Type: application/json
 
 {
-  "name": "rukia",
-  "email": "rukia@gmail.com",
+  "name": "yoruichi",
+  "email": "yoruichi@gmail.com",
   "profilePicture": "fakefot.com",
   "password": "Ab?123456"
 }
@@ -17,18 +17,20 @@ Content-Type: application/json
 ### Pega todos os usuarios
 
 GET {{baseUrl}}/users
+Authorization: Bearer {{authToken}}
 
 ### Pega o usuario pelo id
-GET {{baseUrl}}/users/1
+GET {{baseUrl}}/users/5
+Authorization: Bearer {{authToken}}
 
 ### Salva Post para o Usuario
-POST {{baseUrl}}/users/4/saved-posts/2
+POST {{baseUrl}}/users/saved-posts/2
 
 ### Remove um Post do salvos do usuario
-DELETE {{baseUrl}}/users/4/saved-posts/2
+DELETE {{baseUrl}}/users/saved-posts/2
 
 ### Pega todos os posts salvos do usuario
-GET {{baseUrl}}/users/4/saved-posts
+GET {{baseUrl}}/users/saved-posts
 
 # POST
 
@@ -63,6 +65,6 @@ POST  {{baseUrl}}/auth/
 Content-Type: application/json
 
 {
-  "email": "rukia@gmail.com",
+  "email": "nelliel@gmail.com",
   "password": "Ab?123456"
 }
