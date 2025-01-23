@@ -8,6 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from '@hapi/joi';
 import appConfig from './app.config';
 import { AuthModule } from 'src/auth/auth.module';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
@@ -25,7 +26,10 @@ import { AuthModule } from 'src/auth/auth.module';
       }),
     }),
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
+      imports: [
+        ConfigModule,
+        MulterModule.register({ dest: './uploads/posts' }),
+      ],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
         return {

@@ -24,7 +24,7 @@ export class AuthTokenGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedException('Usuario não logado');
+      throw new UnauthorizedException('User is not authenticated');
     }
 
     try {

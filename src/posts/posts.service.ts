@@ -12,6 +12,8 @@ import { PaginationQueryDto } from './pagination/dto/pagination.dto';
 import { PaginatedResult } from './pagination/pagination.interface';
 import { User } from 'src/users/entities/user.entity';
 import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class PostsService {
@@ -243,6 +245,56 @@ export class PostsService {
 
       return this.postRepository.remove(post);
     } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateCoverImage(
+    postId: number,
+    coverImageFilename: string,
+    tokenPayload: TokenPayloadDto,
+  ) {
+    console.log('tokenPayload:', tokenPayload);
+    if (tokenPayload.role !== 'blogger') {
+      throw new UnauthorizedException(
+        'You are not allowed to update this post',
+      );
+    }
+
+    try {
+      const post = await this.postRepository.findOne({
+        where: { id: postId },
+        relations: ['author'],
+      });
+
+      if (!post) {
+        throw new NotFoundException('Post not found');
+      }
+
+      if (tokenPayload.sub !== post.author.id) {
+        throw new UnauthorizedException(
+          'You are not allowed to update this post',
+        );
+      }
+
+      if (post.coverImage) {
+        const oldImagePath = path.join('./uploads/posts', post.coverImage);
+
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+
+      post.coverImage = coverImageFilename;
+
+      return this.postRepository.save(post);
+    } catch (error) {
+      const filePath = path.join('./uploads/posts', coverImageFilename);
+
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+
       throw error;
     }
   }
