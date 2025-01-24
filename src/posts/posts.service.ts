@@ -25,14 +25,12 @@ export class PostsService {
   ) {}
   async create(createPostDto: CreatePostDto, authorId: number) {
     try {
-      // Check if author exists
       const author = await this.userRepository.findOneBy({ id: authorId });
 
       if (!author) {
         throw new NotFoundException('Author not found');
       }
 
-      // Create and save the post
       const post = this.postRepository.create({
         ...createPostDto,
         author: { id: authorId },
@@ -40,7 +38,6 @@ export class PostsService {
 
       const savedPost = await this.postRepository.save(post);
 
-      // Return the saved post with author information
       return this.postRepository.findOne({
         where: { id: savedPost.id },
         relations: ['author'],

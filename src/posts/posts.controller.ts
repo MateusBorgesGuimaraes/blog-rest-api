@@ -39,7 +39,6 @@ export class PostsController {
     @TokenPayloadParam() tokenPayload: TokenPayloadDto,
     @Body() createPostDto: CreatePostDto,
   ) {
-    console.log('tokenPayload.sub', tokenPayload.sub);
     return this.postsService.create(createPostDto, tokenPayload.sub);
   }
 
@@ -113,18 +112,12 @@ export class PostsController {
     )
     file: Express.Multer.File,
     @Param('postId') postId: number,
-    // @Req() req: Request,
     @TokenPayloadParam() tokenPayload: TokenPayloadDto,
   ) {
-    // const tokenPayload = req['user'];
-
-    // Ensure uploads directory exists
     const uploadDir = './uploads/posts';
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
-
-    // Update post with cover image path
     return this.postsService.updateCoverImage(
       postId,
       file.filename,

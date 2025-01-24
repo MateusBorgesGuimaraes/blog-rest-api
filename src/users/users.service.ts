@@ -14,6 +14,9 @@ import { PaginationQueryDto } from 'src/posts/pagination/dto/pagination.dto';
 import { PaginatedResult } from 'src/posts/pagination/pagination.interface';
 import { HashingService } from 'src/auth/hashing/hashing.service';
 import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
+// import path from 'path';
+import * as path from 'path';
+import * as fs from 'fs';
 
 @Injectable()
 export class UsersService {
@@ -213,6 +216,112 @@ export class UsersService {
         },
       };
     } catch (error) {
+      throw error;
+    }
+  }
+
+  async getBloggerPosts(userId: number, query: PaginationQueryDto) {
+    const { page = 1, limit = 10, category, search } = query;
+    const skip = (page - 1) * limit;
+
+    try {
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      const whereClause: any = {
+        author: { id: userId },
+      };
+
+      if (category) {
+        whereClause.category = category;
+      }
+      if (search) {
+        whereClause.title = Like(`%${search}%`);
+      }
+
+      const [posts, total] = await this.postRepository.findAndCount({
+        where: whereClause,
+        relations: ['author'],
+        select: {
+          author: {
+            id: true,
+            name: true,
+            profilePicture: true,
+          },
+        },
+        order: {
+          createdAt: 'DESC',
+        },
+        skip,
+        take: limit,
+      });
+
+      if (!posts.length) {
+        throw new NotFoundException('No saved posts found');
+      }
+
+      const lastPage = Math.ceil(total / limit);
+
+      return {
+        data: posts,
+        meta: {
+          total,
+          page,
+          lastPage,
+          limit,
+        },
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateProfileImage(
+    userId: number,
+    profileImageFileName: string,
+    tokenPayload: TokenPayloadDto,
+  ) {
+    if (tokenPayload.sub !== userId) {
+      throw new UnauthorizedException(
+        'You are not allowed to update this profile',
+      );
+    }
+
+    try {
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      if (user.profilePicture) {
+        const oldImagePath = path.join(
+          './uploads/profiles',
+          user.profilePicture,
+        );
+
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+
+      user.profilePicture = profileImageFileName;
+
+      return this.userRepository.save(user);
+    } catch (error) {
+      const filePath = path.join('./uploads/profiles', profileImageFileName);
+
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+
       throw error;
     }
   }

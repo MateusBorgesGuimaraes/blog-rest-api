@@ -26,10 +26,7 @@ import { MulterModule } from '@nestjs/platform-express';
       }),
     }),
     TypeOrmModule.forRootAsync({
-      imports: [
-        ConfigModule,
-        MulterModule.register({ dest: './uploads/posts' }),
-      ],
+      imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
         return {
@@ -45,6 +42,13 @@ import { MulterModule } from '@nestjs/platform-express';
           synchronize: configService.get<boolean>('database.synchronize'),
         };
       },
+    }),
+    MulterModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: () => ({
+        dest: './uploads', // Base upload directory
+      }),
     }),
     UsersModule,
     PostsModule,

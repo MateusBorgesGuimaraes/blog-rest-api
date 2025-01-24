@@ -32,6 +32,26 @@ DELETE {{baseUrl}}/users/saved-posts/2
 ### Pega todos os posts salvos do usuario
 GET {{baseUrl}}/users/saved-posts
 
+### Upload Profile Picture
+POST {{baseUrl}}/users/upload-profile
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="nelliel.jpeg"
+Content-Type: image/jpeg
+
+< ./dev/images/nelliel.jpeg
+------WebKitFormBoundary--
+
+### Get Profile Picture
+GET {{baseUrl}}/users/profile/user-profile-1737722127561-415703680.jpeg
+
+
+### Get the blogger post
+GET {{baseUrl}}/users/blogger/posts
+Authorization: Bearer {{authToken}}
+
 # POST
 
 ### Cria um post
@@ -40,11 +60,11 @@ Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-      "title": "The Rise of Decentralized Finance",
-      "content": "Decentralized Finance (DeFi) is reshaping the traditional financial landscape. This analysis explores the fundamental concepts of DeFi, its current applications, and its potential to democratize access to financial services across the globe...",
-      "coverImage": "https://example.com/images/defi-rise.jpg",
-      "category": "technology"
-}
+      "title": "Cultural Shifts in the Post-Pandemic World",
+      "content": "The global pandemic has left an indelible mark on cultural practices and social norms. This exploration looks at how societies have adapted, examining changes in work culture, social interactions, and community building in the aftermath of this unprecedented global event...",
+      "coverImage": "https://example.com/images/cultural-shifts.jpg",
+      "category": "culture"
+    }
 
 
 ### Pega um post por id
@@ -81,6 +101,6 @@ POST  {{baseUrl}}/auth/
 Content-Type: application/json
 
 {
-  "email": "ichigo@gmail.com",
+  "email": "yoruichi@gmail.com",
   "password": "Ab?123456"
 }
