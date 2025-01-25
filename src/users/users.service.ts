@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -42,7 +43,15 @@ export class UsersService {
 
       const newUser = this.userRepository.create(userData);
 
-      return await this.userRepository.save(newUser);
+      await this.userRepository.save(newUser);
+
+      return {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        profilePicture: newUser.profilePicture,
+        role: newUser.role,
+      };
     } catch (error) {
       if (error.code === '23505') {
         throw new ConflictException('Email already exists');
@@ -116,6 +125,7 @@ export class UsersService {
       const isPostSaved = user.savedPosts.some(
         (savedPost) => savedPost.id === postId,
       );
+
       if (isPostSaved) {
         throw new ConflictException('Post is already saved');
       }
@@ -123,7 +133,10 @@ export class UsersService {
       user.savedPosts.push(post);
       await this.userRepository.save(user);
 
-      return { message: 'Post saved successfully' };
+      return {
+        postId: post.id,
+        message: 'Post saved successfully',
+      };
     } catch (error) {
       throw error;
     }
@@ -160,6 +173,11 @@ export class UsersService {
     userId: number,
     query: PaginationQueryDto,
   ): Promise<PaginatedResult<Post>> {
+    console.log('Received userId:', userId, 'Type:', typeof userId);
+
+    if (isNaN(userId)) {
+      throw new BadRequestException('Invalid user ID');
+    }
     const { page = 1, limit = 10, category, search } = query;
     const skip = (page - 1) * limit;
 

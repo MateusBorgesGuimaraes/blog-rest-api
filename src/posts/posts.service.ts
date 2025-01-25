@@ -23,9 +23,14 @@ export class PostsService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
-  async create(createPostDto: CreatePostDto, authorId: number) {
+  async create(createPostDto: CreatePostDto, tokenPayload: TokenPayloadDto) {
+    if (!tokenPayload.sub || tokenPayload.role !== 'blogger') {
+      throw new UnauthorizedException('You are not allowed to create a post');
+    }
     try {
-      const author = await this.userRepository.findOneBy({ id: authorId });
+      const author = await this.userRepository.findOneBy({
+        id: tokenPayload.sub,
+      });
 
       if (!author) {
         throw new NotFoundException('Author not found');
@@ -33,7 +38,7 @@ export class PostsService {
 
       const post = this.postRepository.create({
         ...createPostDto,
-        author: { id: authorId },
+        author: { id: tokenPayload.sub },
       });
 
       const savedPost = await this.postRepository.save(post);
@@ -251,7 +256,6 @@ export class PostsService {
     coverImageFilename: string,
     tokenPayload: TokenPayloadDto,
   ) {
-    console.log('tokenPayload:', tokenPayload);
     if (tokenPayload.role !== 'blogger') {
       throw new UnauthorizedException(
         'You are not allowed to update this post',

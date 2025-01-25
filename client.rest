@@ -8,8 +8,8 @@ POST {{baseUrl}}/users/register
 Content-Type: application/json
 
 {
-  "name": "yoruichi",
-  "email": "yoruichi@gmail.com",
+  "name": "unohana",
+  "email": "unohana@gmail.com",
   "profilePicture": "fakefot.com",
   "password": "Ab?123456"
 }
@@ -24,13 +24,16 @@ GET {{baseUrl}}/users/5
 Authorization: Bearer {{authToken}}
 
 ### Salva Post para o Usuario
-POST {{baseUrl}}/users/saved-posts/2
+POST {{baseUrl}}/users/saved-posts/9
+Authorization: Bearer {{authToken}}
 
-### Remove um Post do salvos do usuario
-DELETE {{baseUrl}}/users/saved-posts/2
+### Remove um Post do salvos do usuario 
+DELETE {{baseUrl}}/users/saved-posts/9
+Authorization: Bearer {{authToken}}
 
 ### Pega todos os posts salvos do usuario
 GET {{baseUrl}}/users/saved-posts
+Authorization: Bearer {{authToken}}
 
 ### Upload Profile Picture
 POST {{baseUrl}}/users/upload-profile
@@ -60,9 +63,9 @@ Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-      "title": "Cultural Shifts in the Post-Pandemic World",
+      "title": "Cultural Shifts in the Post-Pandemic World2",
       "content": "The global pandemic has left an indelible mark on cultural practices and social norms. This exploration looks at how societies have adapted, examining changes in work culture, social interactions, and community building in the aftermath of this unprecedented global event...",
-      "coverImage": "https://example.com/images/cultural-shifts.jpg",
+      "coverImage": "https://example.com/images2/cultural-shifts.jpg",
       "category": "culture"
     }
 
