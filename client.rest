@@ -8,8 +8,8 @@ POST {{baseUrl}}/users/register
 Content-Type: application/json
 
 {
-  "name": "unohana",
-  "email": "unohana@gmail.com",
+  "name": "zaraki",
+  "email": "zaraki@gmail.com",
   "profilePicture": "fakefot.com",
   "password": "Ab?123456"
 }
@@ -24,11 +24,11 @@ GET {{baseUrl}}/users/5
 Authorization: Bearer {{authToken}}
 
 ### Salva Post para o Usuario
-POST {{baseUrl}}/users/saved-posts/9
+POST {{baseUrl}}/users/saved-posts/10
 Authorization: Bearer {{authToken}}
 
 ### Remove um Post do salvos do usuario 
-DELETE {{baseUrl}}/users/saved-posts/9
+DELETE {{baseUrl}}/users/saved-posts/10
 Authorization: Bearer {{authToken}}
 
 ### Pega todos os posts salvos do usuario
@@ -41,14 +41,14 @@ Authorization: Bearer {{authToken}}
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
 
 ------WebKitFormBoundary
-Content-Disposition: form-data; name="file"; filename="nelliel.jpeg"
+Content-Disposition: form-data; name="file"; filename="zaraki.jpg"
 Content-Type: image/jpeg
 
-< ./dev/images/nelliel.jpeg
+< ./dev/images/zaraki.jpg
 ------WebKitFormBoundary--
 
 ### Get Profile Picture
-GET {{baseUrl}}/users/profile/user-profile-1737722127561-415703680.jpeg
+GET {{baseUrl}}/users/profile/user-profile-1737894734379-329321805.jpg
 
 
 ### Get the blogger post
@@ -63,39 +63,41 @@ Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
-      "title": "Cultural Shifts in the Post-Pandemic World2",
-      "content": "The global pandemic has left an indelible mark on cultural practices and social norms. This exploration looks at how societies have adapted, examining changes in work culture, social interactions, and community building in the aftermath of this unprecedented global event...",
-      "coverImage": "https://example.com/images2/cultural-shifts.jpg",
-      "category": "culture"
-    }
+    "title": "The Rise of Remote Work: A Permanent Transformation2",
+    "content": "What began as a necessity during lockdowns has evolved into a fundamental reimagining of workplace dynamics. This article delves into how remote and hybrid work models are reshaping employment, productivity, and work-life balance across industries.",
+    "coverImage": "https://example.com/images/remote-work.jpg",
+    "category": "technology"
+  }
 
 
 ### Pega um post por id
 GET {{baseUrl}}/posts/1
 
-### Pega todos os post de um usuario
-GET {{baseUrl}}/posts/user/1
-
 ### Pega post com uma paginação basica
-GET {{baseUrl}}/posts?page=1&limit=2
+GET {{baseUrl}}/posts?page=3&limit=2
 
 ### Pega os post com uma paginação avançada
-GET {{baseUrl}}/posts?page=1&limit=10&category=technology&search=nestjs
+GET {{baseUrl}}/posts?page=1&limit=10&category=health&search=Sustainable
 
 ### Upload Post Cover Image
-POST {{baseUrl}}/posts/upload-cover/6
+POST {{baseUrl}}/posts/upload-cover/8
 Authorization: Bearer {{authToken}}
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
 
 ------WebKitFormBoundary
-Content-Disposition: form-data; name="file"; filename="books.jpg"
+Content-Disposition: form-data; name="file"; filename="quantun.jpg"
 Content-Type: image/jpeg
 
-< ./dev/images/books.jpg
+< ./dev/images/quantun.jpg
 ------WebKitFormBoundary--
 
 ### Get Post Cover Image
-GET {{baseUrl}}/posts/cover/post-cover-1737662828628-129016609.jpg
+GET {{baseUrl}}/posts/cover/post-cover-1737898895956-144566741.jpg
+
+### Deleta post
+
+DELETE {{baseUrl}}/posts/14
+Authorization: Bearer {{authToken}}
 
 # AUTH
 ### Loga o usuario
@@ -104,6 +106,6 @@ POST  {{baseUrl}}/auth/
 Content-Type: application/json
 
 {
-  "email": "yoruichi@gmail.com",
+  "email": "ichigo@gmail.com",
   "password": "Ab?123456"
 }

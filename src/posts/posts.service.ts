@@ -129,67 +129,6 @@ export class PostsService {
     }
   }
 
-  async findUserPosts(
-    userId: number,
-    query: PaginationQueryDto,
-  ): Promise<PaginatedResult<Post>> {
-    const { page = 1, limit = 10, category, search } = query;
-    const skip = (page - 1) * limit;
-
-    const whereClause: any = {
-      author: { id: userId },
-    };
-
-    if (category) {
-      whereClause.category = category;
-    }
-    if (search) {
-      whereClause.title = Like(`%${search}%`);
-    }
-
-    try {
-      const userExists = await this.userRepository.findOneBy({ id: userId });
-      if (!userExists) {
-        throw new NotFoundException('User not found');
-      }
-
-      const [posts, total] = await this.postRepository.findAndCount({
-        where: whereClause,
-        relations: ['author'],
-        select: {
-          author: {
-            id: true,
-            name: true,
-            profilePicture: true,
-          },
-        },
-        order: {
-          createdAt: 'DESC',
-        },
-        skip,
-        take: limit,
-      });
-
-      if (!posts.length) {
-        throw new NotFoundException('No posts found for this user');
-      }
-
-      const lastPage = Math.ceil(total / limit);
-
-      return {
-        data: posts,
-        meta: {
-          total,
-          page,
-          lastPage,
-          limit,
-        },
-      };
-    } catch (error) {
-      throw error;
-    }
-  }
-
   async update(
     id: number,
     updatePostDto: UpdatePostDto,
@@ -233,7 +172,10 @@ export class PostsService {
     }
 
     try {
-      const post = await this.postRepository.findOneBy({ id });
+      const post = await this.postRepository.findOne({
+        where: { id },
+        relations: ['author'],
+      });
 
       if (!post) {
         throw new NotFoundException('Post not found');
@@ -245,7 +187,9 @@ export class PostsService {
         );
       }
 
-      return this.postRepository.remove(post);
+      await this.postRepository.remove(post);
+
+      return { removedPostId: id, message: 'Post deleted successfully' };
     } catch (error) {
       throw error;
     }
@@ -288,7 +232,13 @@ export class PostsService {
 
       post.coverImage = coverImageFilename;
 
-      return this.postRepository.save(post);
+      await this.postRepository.save(post);
+
+      return {
+        userId: post.author.id,
+        message: 'Cover image updated successfully',
+        coverImage: post.coverImage,
+      };
     } catch (error) {
       const filePath = path.join('./uploads/posts', coverImageFilename);
 

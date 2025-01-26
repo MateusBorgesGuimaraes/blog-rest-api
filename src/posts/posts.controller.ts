@@ -29,6 +29,14 @@ import { Response } from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  CreatePostResponseDto,
+  DeletedPostResponseDto,
+  GetPostByIdResponseDto,
+  PaginatedGetPostsResponseDto,
+  UpdatedPostCoverResponseDto,
+  UpdatedPostResponseDto,
+} from './dto/post-response.dto';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -41,6 +49,7 @@ export class PostsController {
   @ApiResponse({
     status: 201,
     description: 'The post has been successfully created.',
+    type: CreatePostResponseDto,
   })
   @ApiResponse({
     status: 401,
@@ -66,6 +75,7 @@ export class PostsController {
   @ApiResponse({
     status: 200,
     description: 'Returns an array of posts.',
+    type: PaginatedGetPostsResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -84,6 +94,7 @@ export class PostsController {
   @ApiResponse({
     status: 200,
     description: 'Returns a post.',
+    type: GetPostByIdResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -103,6 +114,7 @@ export class PostsController {
   @ApiResponse({
     status: 200,
     description: 'The post has been successfully updated.',
+    type: UpdatedPostResponseDto,
   })
   @ApiResponse({
     status: 401,
@@ -126,6 +138,7 @@ export class PostsController {
   @ApiResponse({
     status: 200,
     description: 'The post has been successfully deleted.',
+    type: DeletedPostResponseDto,
   })
   @ApiResponse({
     status: 401,
@@ -143,37 +156,12 @@ export class PostsController {
   }
 
   @UseGuards(AuthTokenGuard)
-  @Get('user')
-  @ApiOperation({ summary: 'Get all saved posts of a user' })
-  @ApiResponse({
-    status: 200,
-    description: 'Returns an array of posts.',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Bad Request.',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Posts not found.',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'User not found.',
-  })
-  getUserPosts(
-    @TokenPayloadParam() tokenPayload: TokenPayloadDto,
-    @Query() query: PaginationQueryDto,
-  ) {
-    return this.postsService.findUserPosts(tokenPayload.sub, query);
-  }
-
-  @UseGuards(AuthTokenGuard)
   @Post('upload-cover/:postId')
   @ApiOperation({ summary: 'Upload a cover image for a post' })
   @ApiResponse({
     status: 200,
     description: 'The cover image has been successfully uploaded.',
+    type: UpdatedPostCoverResponseDto,
   })
   @ApiResponse({
     status: 401,

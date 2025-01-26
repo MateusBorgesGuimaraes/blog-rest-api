@@ -30,6 +30,14 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  PaginatedBloggerCreatedPostResponseDto,
+  PaginatedUserSavedPostResponseDto,
+  UpdatedProfilePictureResponseDto,
+  UserResponseDto,
+  UserSavePostsResponseDto,
+  UserUnsavePostsResponseDto,
+} from './dto/user-response.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -38,7 +46,11 @@ export class UsersController {
 
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
-  @ApiResponse({ status: 201, description: 'User created successfully' })
+  @ApiResponse({
+    status: 201,
+    description: 'User created successfully',
+    type: UserResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 409, description: 'Email already exists' })
   create(@Body() createUserDto: CreateUserDto) {
@@ -48,7 +60,11 @@ export class UsersController {
   @UseGuards(AuthTokenGuard)
   @Get('/saved-posts')
   @ApiOperation({ summary: 'Get saved posts' })
-  @ApiResponse({ status: 200, description: 'Saved posts found' })
+  @ApiResponse({
+    status: 200,
+    description: 'Saved posts found',
+    type: PaginatedUserSavedPostResponseDto,
+  })
   @ApiResponse({ status: 404, description: 'Saved posts not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -62,7 +78,11 @@ export class UsersController {
   @UseGuards(AuthTokenGuard)
   @Get()
   @ApiOperation({ summary: 'Get all users' })
-  @ApiResponse({ status: 200, description: 'Users found' })
+  @ApiResponse({
+    status: 200,
+    description: 'Users found',
+    type: [UserResponseDto],
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Users not found' })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -73,7 +93,11 @@ export class UsersController {
   @UseGuards(AuthTokenGuard)
   @Get(':id')
   @ApiOperation({ summary: 'Get a user by ID' })
-  @ApiResponse({ status: 200, description: 'User found' })
+  @ApiResponse({
+    status: 200,
+    description: 'User found',
+    type: UserResponseDto,
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -87,7 +111,11 @@ export class UsersController {
   @UseGuards(AuthTokenGuard)
   @Post('/saved-posts/:postId')
   @ApiOperation({ summary: 'Save a post' })
-  @ApiResponse({ status: 201, description: 'Post saved successfully' })
+  @ApiResponse({
+    status: 201,
+    description: 'Post saved successfully',
+    type: UserSavePostsResponseDto,
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Post not found' })
   @ApiResponse({ status: 409, description: 'Post already saved' })
@@ -102,7 +130,11 @@ export class UsersController {
   @UseGuards(AuthTokenGuard)
   @Delete('/saved-posts/:postId')
   @ApiOperation({ summary: 'Unsave a post' })
-  @ApiResponse({ status: 200, description: 'Post removed from saved posts' })
+  @ApiResponse({
+    status: 200,
+    description: 'Post removed from saved posts',
+    type: UserUnsavePostsResponseDto,
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Post not found' })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -119,6 +151,7 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'Profile image uploaded successfully',
+    type: UpdatedProfilePictureResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -184,7 +217,11 @@ export class UsersController {
   @UseGuards(AuthTokenGuard)
   @Get('blogger/posts')
   @ApiOperation({ summary: 'Get blogger posts' })
-  @ApiResponse({ status: 200, description: 'Blogger posts found' })
+  @ApiResponse({
+    status: 200,
+    description: 'Blogger posts found',
+    type: PaginatedBloggerCreatedPostResponseDto,
+  })
   @ApiResponse({ status: 404, description: 'Blogger posts not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 400, description: 'Bad request' })

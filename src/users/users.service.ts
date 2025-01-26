@@ -332,7 +332,13 @@ export class UsersService {
 
       user.profilePicture = profileImageFileName;
 
-      return this.userRepository.save(user);
+      await this.userRepository.save(user);
+
+      return {
+        userId: userId,
+        profilePicture: profileImageFileName,
+        message: 'Profile image updated successfully',
+      };
     } catch (error) {
       const filePath = path.join('./uploads/profiles', profileImageFileName);
 
