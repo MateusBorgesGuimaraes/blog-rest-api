@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:3000
+@baseUrl = http://localhost:3001
 @authToken = {{authenticate.response.body.accessToken}}
 
 # USER
@@ -8,8 +8,8 @@ POST {{baseUrl}}/users/register
 Content-Type: application/json
 
 {
-  "name": "zaraki",
-  "email": "zaraki@gmail.com",
+  "name": "momo",
+  "email": "momo@gmail.com",
   "profilePicture": "fakefot.com",
   "password": "Ab?123456"
 }
@@ -41,10 +41,10 @@ Authorization: Bearer {{authToken}}
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
 
 ------WebKitFormBoundary
-Content-Disposition: form-data; name="file"; filename="zaraki.jpg"
+Content-Disposition: form-data; name="file"; filename="halibel.jpg"
 Content-Type: image/jpeg
 
-< ./dev/images/zaraki.jpg
+< ./dev/images/halibel.jpg
 ------WebKitFormBoundary--
 
 ### Get Profile Picture

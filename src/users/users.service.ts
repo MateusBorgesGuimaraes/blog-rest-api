@@ -28,6 +28,9 @@ export class UsersService {
     private readonly postRepository: Repository<Post>,
     private readonly hashingService: HashingService,
   ) {}
+
+  private readonly UPLOAD_DIR = './uploads/profiles';
+
   async create(createUserDto: CreateUserDto) {
     try {
       const passwordHash = await this.hashingService.hash(
@@ -299,53 +302,72 @@ export class UsersService {
     }
   }
 
-  async updateProfileImage(
-    userId: number,
-    profileImageFileName: string,
-    tokenPayload: TokenPayloadDto,
-  ) {
-    if (tokenPayload.sub !== userId) {
-      throw new UnauthorizedException(
-        'You are not allowed to update this profile',
-      );
+  private ensureUploadDirectory(): void {
+    if (!fs.existsSync(this.UPLOAD_DIR)) {
+      fs.mkdirSync(this.UPLOAD_DIR, { recursive: true });
+    }
+  }
+
+  private generateUniqueFilename(originalFilename: string): string {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const ext = path.extname(originalFilename);
+    return `user-profile-${uniqueSuffix}${ext}`;
+  }
+
+  private async deleteOldProfileImage(profilePicture: string): Promise<void> {
+    if (profilePicture) {
+      const oldImagePath = path.join(this.UPLOAD_DIR, profilePicture);
+      if (fs.existsSync(oldImagePath)) {
+        await fs.promises.unlink(oldImagePath);
+      }
+    }
+  }
+
+  private async saveProfileImage(file: Express.Multer.File): Promise<string> {
+    this.ensureUploadDirectory();
+    const filename = this.generateUniqueFilename(file.originalname);
+    const filepath = path.join(this.UPLOAD_DIR, filename);
+
+    try {
+      await fs.promises.rename(file.path, filepath);
+      return filename;
+    } catch (error) {
+      if (fs.existsSync(file.path)) {
+        await fs.promises.unlink(file.path);
+      }
+      throw error;
+    }
+  }
+
+  async updateProfileImage(userId: number, file: Express.Multer.File) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
 
     try {
-      const user = await this.userRepository.findOne({
-        where: { id: userId },
-      });
+      await this.deleteOldProfileImage(user.profilePicture);
 
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
+      const filename = await this.saveProfileImage(file);
 
-      if (user.profilePicture) {
-        const oldImagePath = path.join(
-          './uploads/profiles',
-          user.profilePicture,
-        );
-
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
-        }
-      }
-
-      user.profilePicture = profileImageFileName;
-
+      user.profilePicture = filename;
       await this.userRepository.save(user);
 
       return {
         userId: userId,
-        profilePicture: profileImageFileName,
+        profilePicture: filename,
         message: 'Profile image updated successfully',
       };
     } catch (error) {
-      const filePath = path.join('./uploads/profiles', profileImageFileName);
-
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+      if (file.filename) {
+        const filePath = path.join(this.UPLOAD_DIR, file.filename);
+        if (fs.existsSync(filePath)) {
+          await fs.promises.unlink(filePath);
+        }
       }
-
       throw error;
     }
   }

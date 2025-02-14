@@ -146,7 +146,7 @@ export class UsersController {
   }
 
   @UseGuards(AuthTokenGuard)
-  @Post('upload-profile')
+  @Post('/upload-profile')
   @ApiOperation({ summary: 'Upload profile image' })
   @ApiResponse({
     status: 200,
@@ -160,13 +160,11 @@ export class UsersController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: './uploads/profiles',
+        destination: './uploads/profiles/temp', // Temporary storage
         filename: (req, file, cb) => {
           const uniqueSuffix =
             Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const ext = path.extname(file.originalname);
-          const filename = `user-profile-${uniqueSuffix}${ext}`;
-          cb(null, filename);
+          cb(null, uniqueSuffix + path.extname(file.originalname));
         },
       }),
     }),
@@ -188,15 +186,7 @@ export class UsersController {
     file: Express.Multer.File,
     @TokenPayloadParam() tokenPayload: TokenPayloadDto,
   ) {
-    const uploadDir = './uploads/profiles';
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    return this.usersService.updateProfileImage(
-      tokenPayload.sub,
-      file.filename,
-      tokenPayload,
-    );
+    return this.usersService.updateProfileImage(tokenPayload.sub, file);
   }
 
   @Get('profile/:filename')
