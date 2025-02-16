@@ -5,5 +5,6 @@ export interface PaginatedResult<T> {
     page: number;
     lastPage: number;
     limit: number;
+    order: 'asc' | 'desc';
   };
 }

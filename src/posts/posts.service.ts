@@ -23,6 +23,9 @@ export class PostsService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
+
+  private readonly UPLOAD_DIR = './uploads/posts';
+
   async create(createPostDto: CreatePostDto, tokenPayload: TokenPayloadDto) {
     if (!tokenPayload.sub || tokenPayload.role !== 'blogger') {
       throw new UnauthorizedException('You are not allowed to create a post');
@@ -60,7 +63,7 @@ export class PostsService {
   }
 
   async findAll(query: PaginationQueryDto): Promise<PaginatedResult<Post>> {
-    const { page = 1, limit = 10, category, search } = query;
+    const { page = 1, limit = 10, category, search, order = 'desc' } = query;
     const skip = (page - 1) * limit;
 
     const whereClause: any = {};
@@ -82,7 +85,7 @@ export class PostsService {
         },
       },
       order: {
-        createdAt: 'DESC',
+        createdAt: order,
       },
       skip,
       take: limit,
@@ -101,6 +104,7 @@ export class PostsService {
         page,
         lastPage,
         limit,
+        order,
       },
     };
   }
@@ -195,9 +199,46 @@ export class PostsService {
     }
   }
 
+  private ensureUploadDirectory(): void {
+    if (!fs.existsSync(this.UPLOAD_DIR)) {
+      fs.mkdirSync(this.UPLOAD_DIR, { recursive: true });
+    }
+  }
+
+  private generateUniqueFilename(originalFilename: string): string {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const ext = path.extname(originalFilename);
+    return `post-cover-${uniqueSuffix}${ext}`;
+  }
+
+  private async deleteOldCoverImage(coverImage: string): Promise<void> {
+    if (coverImage) {
+      const oldImagePath = path.join(this.UPLOAD_DIR, coverImage);
+      if (fs.existsSync(oldImagePath)) {
+        await fs.promises.unlink(oldImagePath);
+      }
+    }
+  }
+
+  private async saveCoverImage(file: Express.Multer.File): Promise<string> {
+    this.ensureUploadDirectory();
+    const filename = this.generateUniqueFilename(file.originalname);
+    const filepath = path.join(this.UPLOAD_DIR, filename);
+
+    try {
+      await fs.promises.rename(file.path, filepath);
+      return filename;
+    } catch (error) {
+      if (fs.existsSync(file.path)) {
+        await fs.promises.unlink(file.path);
+      }
+      throw error;
+    }
+  }
+
   async updateCoverImage(
     postId: number,
-    coverImageFilename: string,
+    file: Express.Multer.File,
     tokenPayload: TokenPayloadDto,
   ) {
     if (tokenPayload.role !== 'blogger') {
@@ -222,30 +263,25 @@ export class PostsService {
         );
       }
 
-      if (post.coverImage) {
-        const oldImagePath = path.join('./uploads/posts', post.coverImage);
+      await this.deleteOldCoverImage(post.coverImage);
 
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
-        }
-      }
+      const filename = await this.saveCoverImage(file);
 
-      post.coverImage = coverImageFilename;
-
+      post.coverImage = filename;
       await this.postRepository.save(post);
 
       return {
-        userId: post.author.id,
+        postId: postId,
+        coverImage: filename,
         message: 'Cover image updated successfully',
-        coverImage: post.coverImage,
       };
     } catch (error) {
-      const filePath = path.join('./uploads/posts', coverImageFilename);
-
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+      if (file.filename) {
+        const filePath = path.join(this.UPLOAD_DIR, file.filename);
+        if (fs.existsSync(filePath)) {
+          await fs.promises.unlink(filePath);
+        }
       }
-
       throw error;
     }
   }

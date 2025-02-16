@@ -71,10 +71,10 @@ Content-Type: application/json
 
 
 ### Pega um post por id
-GET {{baseUrl}}/posts/1
+GET {{baseUrl}}/posts/17
 
 ### Pega post com uma paginação basica
-GET {{baseUrl}}/posts?page=3&limit=2
+GET {{baseUrl}}/posts?page=1&limit=2&order=desc&category=ficcao
 
 ### Pega os post com uma paginação avançada
 GET {{baseUrl}}/posts?page=1&limit=10&category=health&search=Sustainable

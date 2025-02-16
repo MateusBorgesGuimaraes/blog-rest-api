@@ -178,13 +178,11 @@ export class PostsController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: './uploads/posts',
+        destination: './uploads/posts/temp',
         filename: (req, file, cb) => {
           const uniqueSuffix =
             Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const ext = path.extname(file.originalname);
-          const filename = `post-cover-${uniqueSuffix}${ext}`;
-          cb(null, filename);
+          cb(null, uniqueSuffix + path.extname(file.originalname));
         },
       }),
     }),
@@ -207,15 +205,11 @@ export class PostsController {
     @Param('postId') postId: number,
     @TokenPayloadParam() tokenPayload: TokenPayloadDto,
   ) {
-    const uploadDir = './uploads/posts';
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    return this.postsService.updateCoverImage(
-      postId,
-      file.filename,
-      tokenPayload,
-    );
+    // const uploadDir = './uploads/posts';
+    // if (!fs.existsSync(uploadDir)) {
+    //   fs.mkdirSync(uploadDir, { recursive: true });
+    // }
+    return this.postsService.updateCoverImage(postId, file, tokenPayload);
   }
 
   @Get('cover/:filename')

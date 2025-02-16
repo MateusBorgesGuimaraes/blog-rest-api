@@ -47,7 +47,7 @@ import { MulterModule } from '@nestjs/platform-express';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: () => ({
-        dest: './uploads', // Base upload directory
+        dest: './uploads',
       }),
     }),
     UsersModule,

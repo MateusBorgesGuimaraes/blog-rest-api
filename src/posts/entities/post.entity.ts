@@ -12,13 +12,12 @@ import {
 } from 'typeorm';
 
 export enum PostCategory {
-  TECHNOLOGY = 'technology',
-  CULTURE = 'culture',
-  POLITICS = 'politics',
-  ECONOMICS = 'economics',
-  ENTERTAINMENT = 'entertainment',
-  SCIENCE = 'science',
-  HEALTH = 'health',
+  LIVROS = 'livros',
+  FICCAO = 'ficcao',
+  HISTORIA = 'história',
+  TECNOLOGIA = 'tecnologia',
+  CIENCIA = 'ciencia',
+  POLITICA = 'politica',
 }
 
 @Entity()

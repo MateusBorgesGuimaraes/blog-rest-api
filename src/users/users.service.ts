@@ -15,7 +15,6 @@ import { PaginationQueryDto } from 'src/posts/pagination/dto/pagination.dto';
 import { PaginatedResult } from 'src/posts/pagination/pagination.interface';
 import { HashingService } from 'src/auth/hashing/hashing.service';
 import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
-// import path from 'path';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -181,7 +180,7 @@ export class UsersService {
     if (isNaN(userId)) {
       throw new BadRequestException('Invalid user ID');
     }
-    const { page = 1, limit = 10, category, search } = query;
+    const { page = 1, limit = 10, category, search, order = 'desc' } = query;
     const skip = (page - 1) * limit;
 
     try {
@@ -215,7 +214,7 @@ export class UsersService {
           },
         },
         order: {
-          createdAt: 'DESC',
+          createdAt: order,
         },
         skip,
         take: limit,
@@ -234,6 +233,7 @@ export class UsersService {
           page,
           lastPage,
           limit,
+          order,
         },
       };
     } catch (error) {

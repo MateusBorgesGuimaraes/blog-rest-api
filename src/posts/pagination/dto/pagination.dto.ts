@@ -1,4 +1,4 @@
-import { IsOptional, IsInt, Min, Max, IsEnum } from 'class-validator';
+import { IsOptional, IsInt, Min, Max, IsEnum, IsIn } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PostCategory } from '../../entities/post.entity';
 
@@ -22,4 +22,8 @@ export class PaginationQueryDto {
 
   @IsOptional()
   search?: string;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  order?: 'asc' | 'desc' = 'desc';
 }
