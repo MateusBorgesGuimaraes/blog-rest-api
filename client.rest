@@ -24,7 +24,7 @@ GET {{baseUrl}}/users/5
 Authorization: Bearer {{authToken}}
 
 ### Salva Post para o Usuario
-POST {{baseUrl}}/users/saved-posts/10
+POST {{baseUrl}}/users/saved-posts/25
 Authorization: Bearer {{authToken}}
 
 ### Remove um Post do salvos do usuario 
@@ -74,10 +74,13 @@ Content-Type: application/json
 GET {{baseUrl}}/posts/17
 
 ### Pega post com uma paginação basica
-GET {{baseUrl}}/posts?page=1&limit=2&order=desc&category=ficcao
+GET {{baseUrl}}/posts?page=1&limit=4&search=Intel
 
 ### Pega os post com uma paginação avançada
 GET {{baseUrl}}/posts?page=1&limit=10&category=health&search=Sustainable
+
+### Pega recomendação de posts com base no enviado
+GET {{baseUrl}}/posts/21/recommendations
 
 ### Upload Post Cover Image
 POST {{baseUrl}}/posts/upload-cover/8
@@ -106,6 +109,6 @@ POST  {{baseUrl}}/auth/
 Content-Type: application/json
 
 {
-  "email": "ichigo@gmail.com",
+  "email": "orihime@gmail.com",
   "password": "Ab?123456"
 }

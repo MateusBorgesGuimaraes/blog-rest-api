@@ -7,14 +7,13 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from './entities/post.entity';
-import { Like, Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { PaginationQueryDto } from './pagination/dto/pagination.dto';
 import { PaginatedResult } from './pagination/pagination.interface';
 import { User } from 'src/users/entities/user.entity';
 import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
 import * as fs from 'fs';
 import * as path from 'path';
-
 @Injectable()
 export class PostsService {
   constructor(
@@ -71,7 +70,7 @@ export class PostsService {
       whereClause.category = category;
     }
     if (search) {
-      whereClause.title = Like(`%${search}%`);
+      whereClause.title = ILike(`%${search}%`);
     }
 
     const [posts, total] = await this.postRepository.findAndCount({
@@ -194,6 +193,78 @@ export class PostsService {
       await this.postRepository.remove(post);
 
       return { removedPostId: id, message: 'Post deleted successfully' };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getRecommendations(postId: number): Promise<Post[]> {
+    try {
+      const currentPost = await this.postRepository.findOne({
+        where: { id: postId },
+        select: {
+          id: true,
+          category: true,
+          author: {
+            id: true,
+          },
+        },
+        relations: ['author'],
+      });
+
+      if (!currentPost) {
+        throw new NotFoundException('Post not found');
+      }
+
+      const recommendations = await this.postRepository
+        .createQueryBuilder('post')
+        .leftJoinAndSelect('post.author', 'author')
+        .select([
+          'post.id',
+          'post.title',
+          'post.content',
+          'post.category',
+          'post.coverImage',
+          'post.createdAt',
+          'post.updatedAt',
+          'author.id',
+          'author.name',
+          'author.profilePicture',
+        ])
+        .where('post.id != :postId', { postId })
+        .andWhere('post.category = :category', {
+          category: currentPost.category,
+        })
+        .orderBy('post.createdAt', 'DESC')
+        .take(3)
+        .getMany();
+
+      if (!recommendations.length) {
+        const fallbackRecommendations = await this.postRepository
+          .createQueryBuilder('post')
+          .leftJoinAndSelect('post.author', 'author')
+          .select([
+            'post.id',
+            'post.title',
+            'post.description',
+            'post.content',
+            'post.category',
+            'post.coverImage',
+            'post.createdAt',
+            'post.updatedAt',
+            'author.id',
+            'author.name',
+            'author.profilePicture',
+          ])
+          .where('post.id != :postId', { postId })
+          .orderBy('post.createdAt', 'DESC')
+          .take(3)
+          .getMany();
+
+        return fallbackRecommendations;
+      }
+
+      return recommendations;
     } catch (error) {
       throw error;
     }

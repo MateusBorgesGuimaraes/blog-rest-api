@@ -175,8 +175,6 @@ export class UsersService {
     userId: number,
     query: PaginationQueryDto,
   ): Promise<PaginatedResult<Post>> {
-    console.log('Received userId:', userId, 'Type:', typeof userId);
-
     if (isNaN(userId)) {
       throw new BadRequestException('Invalid user ID');
     }

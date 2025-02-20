@@ -155,6 +155,21 @@ export class PostsController {
     return this.postsService.remove(+id, tokenPayload);
   }
 
+  @Get(':id/recommendations')
+  @ApiOperation({ summary: 'Get post recommendations' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns an array of recommended posts',
+    type: [GetPostByIdResponseDto],
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Post not found',
+  })
+  async getRecommendations(@Param('id') id: string) {
+    return this.postsService.getRecommendations(+id);
+  }
+
   @UseGuards(AuthTokenGuard)
   @Post('upload-cover/:postId')
   @ApiOperation({ summary: 'Upload a cover image for a post' })
@@ -205,10 +220,6 @@ export class PostsController {
     @Param('postId') postId: number,
     @TokenPayloadParam() tokenPayload: TokenPayloadDto,
   ) {
-    // const uploadDir = './uploads/posts';
-    // if (!fs.existsSync(uploadDir)) {
-    //   fs.mkdirSync(uploadDir, { recursive: true });
-    // }
     return this.postsService.updateCoverImage(postId, file, tokenPayload);
   }
 
